@@ -1,0 +1,55 @@
+# Mathematics, Machine Learning, and AI Foundations
+
+## Artificial Intelligence
+
+Artificial intelligence is the field of computer science focused on building systems that can perform tasks associated with human intelligence. These tasks include reasoning, learning from data, understanding language, perceiving patterns, planning actions, and making decisions under uncertainty.
+
+AI can be divided into narrow AI and general AI. Narrow AI is designed for specific tasks such as image classification, translation, recommendation, or speech recognition. General AI refers to a hypothetical system with broad human-like intelligence across many domains.
+
+## Machine Learning
+
+Machine learning is a branch of AI in which systems improve their performance by learning patterns from data rather than following only hand-written rules. A model is trained on examples and then used to make predictions on unseen data.
+
+Major categories include supervised learning, unsupervised learning, and reinforcement learning. Supervised learning uses labeled examples. Unsupervised learning finds structure in unlabeled data. Reinforcement learning learns through rewards and penalties.
+
+## Deep Learning
+
+Deep learning is a subset of machine learning that uses neural networks with multiple layers. These layers learn increasingly abstract representations of data. Deep learning performs well in tasks such as computer vision, speech recognition, and natural language processing.
+
+The success of deep learning depends on large datasets, powerful hardware, and optimization methods that can train many parameters efficiently.
+
+## Neural Networks
+
+A neural network is a computational model composed of layers of interconnected artificial neurons. Each connection has a weight, and each neuron applies a transformation to its inputs. During training, the network adjusts its weights to reduce prediction error.
+
+Common layers include input layers, hidden layers, and output layers. Activation functions such as ReLU, sigmoid, and tanh introduce nonlinearity so the network can model complex relationships.
+
+## Backpropagation
+
+Backpropagation is the standard algorithm used to train neural networks. It computes how much each weight contributed to the final error by propagating gradients backward through the network. The method relies on the chain rule from calculus.
+
+Backpropagation is important because it allows deep models to be trained efficiently. It is closely linked to gradient descent and other optimization algorithms.
+
+## Calculus and Derivatives
+
+Calculus studies change and accumulation. In machine learning, differential calculus is especially important because it helps describe how a loss function changes as model parameters change.
+
+A derivative measures the rate of change of a function. In optimization problems, derivatives tell us whether a change in a parameter increases or decreases the objective function.
+
+## Gradients and Optimization
+
+A gradient is a vector containing the partial derivatives of a multivariable function. In machine learning, the gradient of the loss function indicates how each parameter should change to reduce error.
+
+Gradient descent updates parameters in the direction opposite the gradient. Variants such as stochastic gradient descent, Adam, and RMSProp improve convergence speed and stability.
+
+## Linear Algebra
+
+Linear algebra provides the mathematical language of vectors, matrices, and linear transformations. Neural network inputs, weights, and activations are usually represented with vectors and matrices.
+
+Matrix multiplication is central to the forward pass of neural networks. Understanding dimensions, dot products, and matrix operations is essential for modern AI systems.
+
+## Probability and Statistics
+
+Probability measures uncertainty and describes how likely events are to occur. Statistics provides methods for analyzing data, estimating patterns, and making inferences from samples.
+
+In AI and machine learning, these ideas are used for classification, regression, hypothesis testing, evaluation metrics, and probabilistic modeling. Concepts such as mean, variance, correlation, conditional probability, and Bayes' theorem appear frequently.

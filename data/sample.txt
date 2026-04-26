@@ -1,0 +1,5 @@
+# Study Companion Notes
+
+This folder contains multiple topic files used for retrieval.
+
+The assistant should answer using the most relevant study content it finds in the data directory and explain ideas clearly and concisely.
