@@ -1,0 +1,25 @@
+# Natural Science Overview
+
+## Physics
+
+Physics studies matter, energy, motion, and the fundamental laws of nature. Classical mechanics explains motion and forces, while electromagnetism studies electric and magnetic fields. Thermodynamics examines heat, work, and energy transfer.
+
+Core concepts include velocity, acceleration, force, momentum, energy, power, and conservation laws. Physics often explains natural phenomena with mathematical models and experiments.
+
+## Chemistry
+
+Chemistry studies matter, its composition, structure, properties, and transformations. Atoms combine to form molecules through chemical bonds. Chemical reactions rearrange atoms to create new substances.
+
+Important topics include the periodic table, acids and bases, equilibrium, stoichiometry, bonding, thermochemistry, and organic chemistry. Chemistry helps explain reactions in living systems, materials, and industry.
+
+## Biology
+
+Biology is the study of living organisms and life processes. Major areas include cell biology, genetics, evolution, ecology, physiology, and molecular biology.
+
+Cells are the basic units of life. DNA stores hereditary information. Evolution by natural selection explains how populations change over time. Ecosystems describe interactions among organisms and their environments.
+
+## Scientific Method
+
+The scientific method is a systematic approach to investigating questions about the natural world. It typically involves observation, hypothesis formation, experimentation, data collection, analysis, and conclusion.
+
+Reliable scientific reasoning depends on evidence, reproducibility, careful measurement, and openness to revision when new data appears.
