@@ -84,6 +84,7 @@ class RetrieverAgent:
         """Walk backwards through prerequisite edges to build a learning path."""
         chain = [concept]
         current = concept
+        visited = {concept}
 
         for _ in range(limit):
             predecessors = list(self.graph.graph.predecessors(current))
@@ -98,10 +99,13 @@ class RetrieverAgent:
                     break
 
             next_concept = preferred or predecessors[0]
+            if next_concept in visited:
+                break
             chain.insert(0, next_concept)
+            visited.add(next_concept)
             current = next_concept
 
-        return chain
+        return list(dict.fromkeys(chain))
 
     def _default_graph_path(self, query: str) -> List[str]:
         query_lower = self._normalize_query(query)
@@ -137,15 +141,19 @@ class RetrieverAgent:
     def retrieve(self, query: str, k: int = 5, use_graph: bool = True) -> Dict:
         semantic_docs, semantic_distances = self._semantic_search(query, k=k)
         graph_path = self._extract_graph_path(query) if use_graph else self._default_graph_path(query)
+        graph_path = list(dict.fromkeys(concept for concept in graph_path if concept))
         graph_docs = self._graph_based_retrieval(graph_path, limit=k) if use_graph else []
 
         combined_docs = list(dict.fromkeys(semantic_docs + graph_docs))
         combined_context = "\n\n".join(combined_docs)
 
+        semantic_scores = [1.0 / (1.0 + max(distance, 0.0)) for distance in semantic_distances]
+
         return {
             "query": query,
             "semantic_docs": semantic_docs,
             "semantic_distances": semantic_distances,
+            "semantic_scores": semantic_scores,
             "graph_path": graph_path,
             "graph_docs": graph_docs,
             "combined_docs": combined_docs,

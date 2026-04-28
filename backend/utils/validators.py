@@ -4,6 +4,13 @@ from __future__ import annotations
 
 import re
 
+
+COMMAND_ONLY_PATTERNS = [
+    r"^(create|make|generate|give me|show me)?\s*(a\s*)?(short\s*)?(quiz|mcq|mcqs|test|practice questions?)\s*(please)?$",
+    r"^(create|make|generate|give me|show me)?\s*(flashcards?|flash cards?|study cards?|revision cards?)\s*(please)?$",
+    r"^(revise|revision|review|summarize|summary|explain again|continue|go on)\s*(please)?$",
+]
+
 def is_academic_query(query: str) -> bool:
     """
     Accept any non-empty query.
@@ -39,10 +46,27 @@ def detect_request_mode(query: str) -> str:
     return "explanation"
 
 
+def is_followup_command(query: str) -> bool:
+    """Return True when the message is an intent command without a new topic."""
+    normalized = re.sub(r"\s+", " ", query.lower().strip(" ?,."))
+    return any(re.match(pattern, normalized) for pattern in COMMAND_ONLY_PATTERNS)
+
+
 def extract_topic_query(query: str) -> str:
     """Remove explicit study-mode phrases so retrieval focuses on the topic."""
     cleaned = query.lower()
     phrases = [
+        r"\bplease\b",
+        r"\bexplain\b",
+        r"\bteach\b",
+        r"\brevise\b",
+        r"\brevision\b",
+        r"\breview\b",
+        r"\bsummarize\b",
+        r"\bsummary\b",
+        r"\bstep by step\b",
+        r"\busing graph-?cot\b",
+        r"\blearning path\b",
         r"\bmake\b",
         r"\bgenerate\b",
         r"\bcreate\b",

@@ -15,14 +15,32 @@ class CognitiveGraphEngine:
 
     def add_concept(self, concept: str) -> None:
         """Add concept node"""
-        self.graph.add_node(concept)
+        clean_concept = concept.strip()
+        if clean_concept:
+            self.graph.add_node(clean_concept)
 
     def add_relation(self, source: str, target: str, relation_type: str) -> None:
         """
         Add relation between concepts
         relation_type: 'prereq' | 'similar' | 'applies_to'
         """
-        self.graph.add_edge(source, target, relation=relation_type)
+        source = source.strip()
+        target = target.strip()
+        if source and target and source != target:
+            self.graph.add_edge(source, target, relation=relation_type)
+
+    def _clean_path(self, path: List[str], max_hops: int) -> Optional[List[str]]:
+        clean_path: List[str] = []
+        seen = set()
+        for concept in path:
+            if not concept or concept in seen:
+                continue
+            clean_path.append(concept)
+            seen.add(concept)
+        hops = max(len(clean_path) - 1, 0)
+        if not clean_path or hops > max_hops:
+            return None
+        return clean_path
 
     def get_path(self, start: str, end: str, max_hops: int = 6) -> Optional[List[str]]:
         """Get shortest path between concepts"""
@@ -30,8 +48,7 @@ class CognitiveGraphEngine:
             if start == end:
                 return [start]
             path = nx.shortest_path(self.graph, start, end)
-            hops = max(len(path) - 1, 0)
-            return path if hops <= max_hops else None
+            return self._clean_path(path, max_hops)
         except (nx.NetworkXNoPath, nx.NodeNotFound):
             return None
 
