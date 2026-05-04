@@ -11,6 +11,7 @@ import {
   GraduationCap,
   Layers3,
   Lightbulb,
+  Menu,
   MessageSquarePlus,
   Moon,
   NotebookText,
@@ -26,9 +27,11 @@ import {
   Trash2,
   TrendingUp,
   Trophy,
+  X,
 } from "lucide-react";
 import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
+import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip } from "recharts";
 import rehypeKatex from "rehype-katex";
 import remarkGfm from "remark-gfm";
 import remarkMath from "remark-math";
@@ -53,6 +56,7 @@ export function App() {
   const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(false);
   const [dark, setDark] = useState(false);
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [progress, setProgress] = useState<ProgressPayload | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -123,13 +127,55 @@ export function App() {
         latestResponse={latestResponse}
       />
 
+      <AnimatePresence>
+        {mobileSidebarOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 bg-navy-950/70 lg:hidden"
+          >
+            <motion.div initial={{ x: -320 }} animate={{ x: 0 }} exit={{ x: -320 }} className="h-full w-80 max-w-[88vw]">
+              <Sidebar
+                mobile
+                onNewChat={() => {
+                  setMessages([]);
+                  setMobileSidebarOpen(false);
+                }}
+                onPrompt={(prompt) => {
+                  setMobileSidebarOpen(false);
+                  submit(prompt);
+                }}
+                dark={dark}
+                setDark={setDark}
+                messages={messages}
+                progress={progress}
+                latestResponse={latestResponse}
+              />
+            </motion.div>
+            <button
+              onClick={() => setMobileSidebarOpen(false)}
+              title="Close menu"
+              className="absolute right-4 top-4 flex h-10 w-10 items-center justify-center rounded-lg bg-white text-navy-950"
+            >
+              <X size={18} />
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <main className="flex min-w-0 flex-1 flex-col">
         <header className="flex h-16 items-center justify-between border-b border-slate-200 bg-white px-5 dark:border-slate-800 dark:bg-navy-900">
-          <div>
+          <div className="flex min-w-0 items-center gap-3">
+            <Button variant="outline" size="icon" className="lg:hidden" onClick={() => setMobileSidebarOpen(true)} title="Open menu">
+              <Menu size={18} />
+            </Button>
+            <div className="min-w-0">
             <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500 dark:text-slate-400">
               Personal Study Companion
             </p>
             <h1 className="text-lg font-semibold">AI Study Assistant</h1>
+            </div>
           </div>
           <div className="flex items-center gap-2">
             {latestResponse?.verified && (
@@ -197,6 +243,7 @@ function Sidebar({
   messages,
   progress,
   latestResponse,
+  mobile = false,
 }: {
   onNewChat: () => void;
   onPrompt: (prompt: string) => void;
@@ -205,6 +252,7 @@ function Sidebar({
   messages: Message[];
   progress: ProgressPayload | null;
   latestResponse?: AGCTResponse;
+  mobile?: boolean;
 }) {
   const history = messages.filter((message) => message.role === "user").map((message) => message.content);
   const recentTopics = progress?.recent_topics?.length ? progress.recent_topics : sampleHistory;
@@ -213,7 +261,7 @@ function Sidebar({
     : ["Review one weak area today.", "Try a short quiz after each topic.", "Turn explanations into flashcards."];
 
   return (
-    <aside className="hidden w-72 shrink-0 flex-col border-r border-slate-200 bg-navy-950 text-white lg:flex">
+    <aside className={cn("h-full w-72 shrink-0 flex-col border-r border-slate-200 bg-navy-950 text-white", mobile ? "flex" : "hidden lg:flex")}>
       <div className="flex h-16 items-center gap-3 border-b border-white/10 px-4">
         <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white text-navy-950">
           <GraduationCap size={21} />
@@ -556,10 +604,39 @@ function RightPanel({ response }: { response?: AGCTResponse }) {
     <aside className="hidden min-h-0 overflow-y-auto border-l border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-navy-900 xl:block">
       <div className="space-y-4">
         <LearningPath response={response} />
+        <PerformanceChart response={response} />
         <RetrievalPanel response={response} />
         <ReasoningPanel response={response} />
       </div>
     </aside>
+  );
+}
+
+function PerformanceChart({ response }: { response?: AGCTResponse }) {
+  const score = response?.verification_score ? Math.round(response.verification_score * 100) : 68;
+  const data = [
+    { label: "NLP", value: 82 },
+    { label: "RAG", value: Math.max(55, score - 8) },
+    { label: "CoT", value: Math.max(60, score - 3) },
+    { label: "Verify", value: score },
+  ];
+
+  return (
+    <Card className="p-4">
+      <div className="mb-3 flex items-center justify-between">
+        <h2 className="text-sm font-semibold">Pipeline Confidence</h2>
+        <Badge>{score}%</Badge>
+      </div>
+      <div className="h-36">
+        <ResponsiveContainer width="100%" height="100%">
+          <AreaChart data={data} margin={{ top: 8, right: 8, left: -20, bottom: 0 }}>
+            <CartesianGrid strokeDasharray="3 3" stroke="#d7dde6" />
+            <Tooltip />
+            <Area type="monotone" dataKey="value" stroke="#38bdf8" fill="#38bdf8" fillOpacity={0.18} />
+          </AreaChart>
+        </ResponsiveContainer>
+      </div>
+    </Card>
   );
 }
 
@@ -685,6 +762,10 @@ function ReasoningPanel({ response }: { response?: AGCTResponse }) {
         <div className="flex justify-between rounded-lg bg-slate-50 p-2 dark:bg-navy-950">
           <span>Topic Accuracy</span>
           <strong>{accuracy}</strong>
+        </div>
+        <div className="flex justify-between rounded-lg bg-slate-50 p-2 dark:bg-navy-950">
+          <span>Verification</span>
+          <strong>{response?.verification_status ?? "Ready"}</strong>
         </div>
         <div className="flex justify-between rounded-lg bg-slate-50 p-2 dark:bg-navy-950">
           <span>Explanation Quality</span>

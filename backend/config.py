@@ -11,6 +11,10 @@ DATA_DIR = BASE_DIR / "data"
 BACKEND_DATA_DIR = BACKEND_DIR / "data"
 BACKEND_DATA_DIR.mkdir(parents=True, exist_ok=True)
 
+HF_CACHE_DIR = BACKEND_DATA_DIR / "hf_cache"
+HF_CACHE_DIR.mkdir(parents=True, exist_ok=True)
+os.environ.setdefault("HF_HOME", str(HF_CACHE_DIR))
+
 DATA_PATH = str(DATA_DIR)
 DB_PATH = str(BACKEND_DATA_DIR / "session.db")
 

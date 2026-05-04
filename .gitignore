@@ -7,3 +7,5 @@ frontend/dist/
 dist/
 .vite/
 *.db
+.tmp/
+backend/data/

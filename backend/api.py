@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from functools import lru_cache
-from typing import Any, Dict, List
+from typing import Any
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -23,15 +23,15 @@ class QuizScoreRequest(BaseModel):
 
 @lru_cache(maxsize=1)
 def get_system():
-    from backend.core.agct_system import AGCTSystem
+    from backend.modules.orchestrator import AcademicAICompanion
 
-    return AGCTSystem()
+    return AcademicAICompanion()
 
 
 app = FastAPI(
     title="Academic AI Companion API",
-    description="Retrieval, Graph-CoT reasoning, verification, quiz, flashcard, and personalization API.",
-    version="1.0.0",
+    description="Academic RAG, Graph-CoT, TinyLlama generation, verification, quiz, flashcard, and personalization API.",
+    version="2.0.0",
 )
 
 app.add_middleware(
@@ -44,61 +44,27 @@ app.add_middleware(
 
 
 @app.get("/api/health")
-def health() -> Dict[str, str]:
+def health() -> dict[str, str]:
     return {"status": "ok"}
 
 
 @app.get("/api/stats")
-def stats() -> Dict[str, Any]:
-    system = get_system()
-    index_stats = system.retriever.get_index_stats()
-    return {
-        **index_stats,
-        "graph_nodes": system.graph_engine.graph.number_of_nodes(),
-        "graph_edges": system.graph_engine.graph.number_of_edges(),
-    }
+def stats() -> dict[str, Any]:
+    return get_system().stats()
 
 
 @app.get("/api/graph")
-def graph() -> Dict[str, List[Dict[str, Any]]]:
-    from backend.graph.cognitive_graph import CognitiveGraphEngine
-
-    engine = CognitiveGraphEngine()
-    engine.build_sample_graph()
-    graph_engine = engine.graph
-    nodes = [{"id": node, "label": node} for node in graph_engine.nodes()]
-    edges = [
-        {
-            "source": source,
-            "target": target,
-            "relation": data.get("relation", "related"),
-        }
-        for source, target, data in graph_engine.edges(data=True)
-    ]
-    return {"nodes": nodes, "edges": edges}
+def graph() -> dict[str, list[dict[str, str]]]:
+    return get_system().graph_cot.graph_payload()
 
 
 @app.get("/api/progress/{user_id}")
-def progress(user_id: str) -> Dict[str, Any]:
-    from backend.agents.rl_personalization import RLPersonalizationAgent
-    from backend.config import DB_PATH
-
-    difficulty = RLPersonalizationAgent(db_path=DB_PATH).get_difficulty(user_id)
-    return {
-        "user_id": user_id,
-        "difficulty": difficulty,
-        "recent_topics": ["Calculus", "Chain Rule", "Backpropagation"],
-        "progress": 68 if difficulty == "moderate" else 84 if difficulty == "advanced" else 42,
-        "recommendations": [
-            "Review prerequisite concepts before advanced prompts.",
-            "Generate a quiz after each explanation.",
-            "Use flashcards to reinforce graph-path concepts.",
-        ],
-    }
+def progress(user_id: str) -> dict[str, Any]:
+    return get_system().personalization.progress(user_id)
 
 
 @app.post("/api/query")
-def query(payload: QueryRequest) -> Dict[str, Any]:
+def query(payload: QueryRequest) -> dict[str, Any]:
     try:
         return get_system().process_query(payload.query, user_id=payload.user_id)
     except Exception as exc:
@@ -110,28 +76,25 @@ def query(payload: QueryRequest) -> Dict[str, Any]:
             "topic_query": "",
             "difficulty": "moderate",
             "graph_path": [],
-            "explanation": (
-                "The tutoring backend could not complete this request. "
-                "Check that the ML dependencies and local Ollama model are available."
-            ),
+            "explanation": "The backend could not complete this request. Check dependencies and Ollama/TinyLlama setup.",
             "verified": False,
             "verification_score": 0.0,
+            "verification_status": "Backend error",
             "sources": [],
             "retrieval": {},
+            "retrieval_notes": [],
             "flashcards": [],
             "quiz": [],
+            "suggested_questions": [],
         }
 
 
 @app.post("/api/quiz-score")
-def quiz_score(payload: QuizScoreRequest) -> Dict[str, Any]:
+def quiz_score(payload: QuizScoreRequest) -> dict[str, Any]:
     system = get_system()
-    system.rl_agent.track_performance(
-        payload.user_id,
-        quiz_score=payload.score,
-        engagement_time=payload.engagement_time,
-    )
+    system.personalization.record(payload.user_id, "quiz practice", payload.score)
     return {
         "status": "success",
-        "difficulty": system.rl_agent.get_difficulty(payload.user_id),
+        "difficulty": system.personalization.difficulty(payload.user_id),
     }
+

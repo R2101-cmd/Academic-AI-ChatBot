@@ -46,6 +46,7 @@ export type AGCTResponse = {
   explanation: string;
   verified: boolean;
   verification_score: number;
+  verification_status?: string;
   sources: string[];
   retrieval: RetrievalPayload;
   retrieval_notes?: RetrievalNote[];
